@@ -22,14 +22,16 @@ brew install swi-prolog
 
 To install SWI-Prolog on Windows, download the installer from the [official website](https://www.swi-prolog.org/Download.html) and follow the instructions.
 
-### Installing
+### Cloning the Repository
 
-1. Clone the repository:
+1. Open your terminal or command prompt and navigate to the directory where you want to clone the repository.
+
+2. Clone the repository:
 ```bash
 git clone https://github.com/afvanwoudenberg/bf.git
 ```
 
-2. Navigate into the project folder:
+3. Navigate into the project folder:
 ```bash
 cd bf
 ```
@@ -66,7 +68,7 @@ Alternatively, you can execute these three steps at once by typing:
 swipl -s bf.pl -g "run_bf_program('hellobf.bf'), halt."
 ```
 
-Adding `halt` will make the Prolog interpreter exit after the Brainfuck has run.
+Adding `halt` will make the Prolog interpreter exit after the Brainfuck `run_bf_program/1` predicate has finished.
 
 ## Author
 

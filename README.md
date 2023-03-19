@@ -1,4 +1,4 @@
-# bf
+# Brainfuck Interpreter
 
 This is a Prolog implementation of a Brainfuck interpreter. Brainfuck is an esoteric programming language with only eight commands, making it one of the simplest programming languages.
 

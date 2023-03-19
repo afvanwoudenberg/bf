@@ -1,40 +1,27 @@
 % bf.pl
 % Aswin van Woudenberg
 
-init_mem(Mem) :- 
-	var(Mem),
-	init_mem(Mem,30000).
-init_mem([],0) :- !.
-init_mem([0|Tail],Size) :-
-	NewSize is Size - 1,
-	init_mem(Tail,NewSize).
+get_mem(Mem,Value,Ref) :-
+	member((Ref,Value),Mem).
+get_mem(Mem,0,Ref) :-
+	not(member((Ref,_),Mem)).
 
-inc_mem([Value|Rest],[NewValue|Rest],0) :-
-	NewValue is (Value + 1) mod 256, !.
-inc_mem([Head|Tail],[Head|NewTail],Ind) :-
-	Ind > 0,
-	NewInd is Ind - 1,
-	inc_mem(Tail,NewTail,NewInd).
+set_mem(Mem,NewMem,Value,Ref) :-
+	member((Ref,_),Mem),
+	select((Ref,_),Mem,(Ref,Value),NewMem).
+set_mem(Mem,[(Ref,Value)|Mem],Value,Ref) :-
+	not(member((Ref,_),Mem)).
+
+inc_mem(Mem,NewMem,Ref) :-
+	get_mem(Mem,Value,Ref),
+	NewValue is (Value + 1) mod 256,
+	set_mem(Mem,NewMem,NewValue,Ref).
+
+dec_mem(Mem,NewMem,Ref) :-
+	get_mem(Mem,Value,Ref),
+	NewValue is (Value + 255) mod 256,
+	set_mem(Mem,NewMem,NewValue,Ref).
 	
-dec_mem([Value|Rest],[NewValue|Rest],0) :-
-	NewValue is (Value + 255) mod 256, !.
-dec_mem([Head|Tail],[Head|NewTail],Ind) :-
-  Ind > 0,
-	NewInd is Ind - 1,
-	dec_mem(Tail,NewTail,NewInd).
-
-get_mem([Value|_],Value,0).
-get_mem([_|Tail],Value,Ptr) :-
-  Ptr > 0,
-	NewPtr is Ptr - 1,
-	get_mem(Tail,Value,NewPtr).
-	
-set_mem([_|Tail],[Value|Tail],Value,0).
-set_mem([Head|Tail],[Head|NewTail],Value,Ptr) :-
-  Ptr > 0,
-	NewPtr is Ptr - 1,
-	set_mem(Tail,NewTail,Value,NewPtr).
-
 skip_forward(Prog,Rest) :- 
 	skip_forward(Prog,Rest, 0).
 skip_forward([']'|Rest],Rest,0).
@@ -63,8 +50,8 @@ instruction(['+'|Rest],Stack,Mem,Ptr,Rest,Stack,NewMem,Ptr) :-
 instruction(['-'|Rest],Stack,Mem,Ptr,Rest,Stack,NewMem,Ptr) :-
 	dec_mem(Mem,NewMem,Ptr), !.
 instruction(['.'|Rest],Stack,Mem,Ptr,Rest,Stack,Mem,Ptr) :-
-  get_mem(Mem,Value,Ptr),
-  put_code(Value), !.
+	get_mem(Mem,Value,Ptr),
+	put_code(Value), !.
 instruction([','|Rest],Stack,Mem,Ptr,Rest,Stack,NewMem,Ptr) :-
 	get_single_char(Value),
 	set_mem(Mem,NewMem,Value,Ptr), !.
@@ -81,8 +68,7 @@ instruction([Inst|Rest],Stack,Mem,Ptr,Rest,Stack,Mem,Ptr) :-
 	not(member(Inst,['+','-','<','>','.',',','[',']'])).
 
 run(Prog) :-
-	init_mem(Mem),
-	sequence(Prog,[],Mem,0).
+	sequence(Prog,[],[],0).
 
 load_bf_program(FileName, Prog) :-
 	see(FileName),
@@ -100,21 +86,11 @@ run_bf_program(FileName) :-
 	run(Prog).
 
 run_hello_world :-
-	init_mem(Mem), 
-	hello_world(Prog),
-	sequence(Prog,[],Mem,0).
+	hello_world(Atom),
+	atom_chars(Atom,Prog),
+	sequence(Prog,[],[],0).
 
-hello_world(['+','+','+','+','+','+','+','+','+','+','[',
-						 '>','+','+','+','+','+','+','+','>','+','+',
-						 '+','+','+','+','+','+','+','+','>','+','+',
-						 '+','>','+','<','<','<','<','-',']','>','+',
-						 '+','.','>','+','.','+','+','+','+','+','+',
-						 '+','.','.','+','+','+','.','>','+','+','.',
-						 '<','<','+','+','+','+','+','+','+','+','+',
-						 '+','+','+','+','+','+','.','>','.','+','+',
-						 '+','.','-','-','-','-','-','-','.','-','-',
-						 '-','-','-','-','-','-','.','>','+','.','>','.']).
+hello_world('++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.').
 
-% load_bf_program('hellobf.bf',Prog), init_mem(Mem), sequence(Prog,[],Mem,0).
 % load_bf_program('hellobf.bf',Prog), run(Prog).
 % run_bf_program('hellobf.bf').
